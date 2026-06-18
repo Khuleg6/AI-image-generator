@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "./globals.css"; // globals.css нь app/ хуудасны шууд доор байх ёстой
 
 const inter = Inter({
   variable: "--font-inter",
@@ -19,7 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable}h-full antialiased`}>
+    // ${inter.className} -ийн ард зай авсан байгааг анзаараарай 👇
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
