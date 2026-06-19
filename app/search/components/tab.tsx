@@ -1,9 +1,12 @@
 "use client";
 import React, { useState } from "react";
+interface TabProps {
+  activeTabs: string;
+  setActiveTabs: (tab: string) => void;
+  tabs: string[];
+}
 
-export const Tab = () => {
-  const tabs = ["Image analysis", "Ingredient recognition", "Image Creator"];
-  const [activeTabs, setActiveTabs] = useState("Image analysis");
+export const Tab = ({ activeTabs, setActiveTabs, tabs }: TabProps) => {
   return (
     <div className="inline-flex items-center gap-1 rounded-xl bg-[#f4f4f5] p-1.5 text-sm font-medium text-gray-500">
       {tabs.map((tab) => (
