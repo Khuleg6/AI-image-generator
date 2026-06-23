@@ -23,6 +23,16 @@ export default function Home() {
       placeholder: "Хоолны тайлбар",
     },
   };
+  const summaryContents: Record<string, any> = {
+    "Ingredient recognition": {
+      title: "Identified Ingredients",
+      description: "First, enter your text to recognize an ingredients.",
+    },
+    "Image analysis": {
+      title: "Here is the summary",
+      description: "First, enter your image to recognize an ingredients..",
+    },
+  };
 
   return (
     <div>
@@ -41,7 +51,9 @@ export default function Home() {
           )}
           {(activeTabs === "Ingredient recognition" ||
             activeTabs === "Image Creator" ||
-            activeTabs === "Image analysis") && <Summary />}
+            activeTabs === "Image analysis") && (
+            <Summary {...summaryContents[activeTabs]} />
+          )}
         </div>
       </div>
     </div>
