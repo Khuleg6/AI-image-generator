@@ -1,7 +1,11 @@
 import { RotateCw, Sparkles } from "lucide-react";
 import React from "react";
-
-export const Input = () => {
+interface InputProps {
+  onFileSelect: (file: File) => void;
+  onGenerate: () => Promise<void>;
+  isLoading: boolean;
+}
+export const Input = ({ onFileSelect, onGenerate, isLoading }: InputProps) => {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-3 items-center">
@@ -20,7 +24,13 @@ export const Input = () => {
           accept="image/png, image/jpeg"
           type="file"
           id="file-upload"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              onFileSelect(e.target.files[0]);
+            }
+          }}
         />
+        {/* ... */}
         <label
           className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-gray-50 px-4 py-3 border border-gray-200 transition-colors hover:bg-gray-100"
           htmlFor="file-upload"
@@ -28,9 +38,13 @@ export const Input = () => {
           <span className="font-medium text-gray-900 text-sm">Choose File</span>
           <span className=" text-gray-400 text-sm">JPEG, PNG</span>
         </label>
-        <button className="h-10 px-4 py-2 gap-2 bg-[#8B8B8D] rounded-md flex ml-auto items-center ">
-          <span className="text-[14px] font-medium leading-5 text-[#FAFAFA]">
-            Generate
+        <button
+          onClick={onGenerate}
+          disabled={isLoading}
+          className="h-10 px-4 py-2 gap-2 bg-[#18181B] rounded-md flex ml-auto items-center hover:opacity-90 transition-opacity"
+        >
+          <span className="text-[14px] font-medium text-white">
+            {isLoading ? "Analyzing..." : "Generate"}
           </span>
         </button>
       </div>
