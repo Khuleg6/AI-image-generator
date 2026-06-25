@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const bytes = await image.arrayBuffer();
     const base64Image = Buffer.from(bytes).toString("base64");
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const result = await model.generateContent([
       "Энэ зураг дээрх хоол эсвэл орц найрлагыг шинжилж, цэгтэй жагсаалтаар (bullet points) тодорхойлно уу.",

@@ -20,7 +20,7 @@ export const Input = ({ onFileSelect, onGenerate, isLoading }: InputProps) => {
       </span>
       <div className="flex flex-col gap-2">
         <input
-          className="hidden"
+          className="hidden "
           accept="image/png, image/jpeg"
           type="file"
           id="file-upload"
