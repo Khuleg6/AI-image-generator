@@ -3,18 +3,30 @@
 import { Send, X, MessageSquare } from "lucide-react";
 import React, { useState } from "react";
 
+interface Message {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+}
+
 export const ChatAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState("");
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const messages = [
-    { id: 1, sender: "bot", text: "How can I help you today?" },
-    {
-      id: 2,
-      sender: "user",
-      text: "Can you describe me detailed delicious pasta carbonara?",
-    },
-  ];
+  const [messages, setMessages] = useState<Message[]>([
+    { id: 1, role: "assistant", content: "How can i help you today?" },
+  ]);
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: messages.length + 1,
+      role: "user",
+      content: input,
+    };
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 font-sans">
