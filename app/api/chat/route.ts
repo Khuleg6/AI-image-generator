@@ -9,12 +9,16 @@ export async function POST(request: Request) {
     const { messages } = await request.json();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       systemInstruction:
         "You are a helpful food assistant. Help users with recipes, ingredients, cooking tips, and food-related questions.",
     });
 
-    const history = messages.slice(0, -1).map((msg: any) => ({
+    // Эхний user мессежийн индексийг олно
+    const firstUserIndex = messages.findIndex((m: any) => m.role === "user");
+
+    // History заавал user-ээр эхэлсэн байх ёстой тул firstUserIndex-ээс авна
+    const history = messages.slice(firstUserIndex, -1).map((msg: any) => ({
       role: msg.role === "assistant" ? "model" : "user",
       parts: [{ text: msg.content }],
     }));
