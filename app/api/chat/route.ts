@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const { messages } = await request.json();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       systemInstruction:
         "You are a helpful food assistant. Help users with recipes, ingredients, cooking tips, and food-related questions.",
     });

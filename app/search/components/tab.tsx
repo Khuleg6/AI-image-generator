@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 interface TabProps {
   activeTabs: string;
   setActiveTabs: (tab: string) => void;
@@ -8,7 +8,7 @@ interface TabProps {
 
 export const Tab = ({ activeTabs, setActiveTabs, tabs }: TabProps) => {
   return (
-    <div className="inline-flex items-center gap-1 rounded-xl bg-[#f4f4f5] p-1.5 text-sm font-medium text-gray-500">
+    <div className="inline-flex w-fit max-w-full self-start items-center gap-1 rounded-xl bg-[#f4f4f5] p-1.5 text-sm font-medium text-gray-500">
       {tabs.map((tab) => (
         <button
           key={tab}

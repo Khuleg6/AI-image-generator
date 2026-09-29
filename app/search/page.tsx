@@ -16,20 +16,37 @@ export default function Home() {
   const [identifiedIngredients, setIdentifiedIngredients] =
     useState<string>("");
   const [analysisResult, setAnalysisResult] = useState<string>("");
+  const [analysisError, setAnalysisError] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const tabs = ["Image analysis", "Ingredient recognition", "Image Creator"];
-  const handleAnalyzeImage = async (file: File) => {
+  const handleAnalyzeImage = async (file: File | null) => {
+    if (!file) return;
     setIsLoading(true);
-    const formData = new FormData();
-    formData.append("image", file);
+    setAnalysisError("");
+    setAnalysisResult("");
 
-    const response = await fetch("/api/analyze-image", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    setAnalysisResult(data.summary);
-    setIsLoading(false);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await fetch("/api/analyze-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Зургийг шинжлэхэд алдаа гарлаа.");
+      }
+      if (typeof data.summary !== "string" || !data.summary.trim()) {
+        throw new Error("AI-аас хариу ирсэнгүй. Дахин оролдоно уу.");
+      }
+      setAnalysisResult(data.summary);
+    } catch (error: unknown) {
+      setAnalysisError(
+        error instanceof Error ? error.message : "Зургийг шинжлэхэд алдаа гарлаа.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGenerateImage = async (prompt: string) => {
@@ -63,15 +80,24 @@ export default function Home() {
     }
   };
   const handleExtractIngredients = async (description: string) => {
-    const response = await fetch("/api/extract-ingredients", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: description }),
-    });
-
-    const data = await response.json();
-    // Эндээс ирсэн data.ingredients-ийг дэлгэцэндээ харуулна
-    setIdentifiedIngredients(data.ingredients);
+    if (!description.trim()) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/extract-ingredients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: description }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Орц найрлагыг танихад алдаа гарлаа.");
+      }
+      setIdentifiedIngredients(data.ingredients);
+    } catch (error: unknown) {
+      alert(error instanceof Error ? error.message : "Орц найрлагыг танихад алдаа гарлаа.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const tabContents: Record<string, any> = {
@@ -101,16 +127,21 @@ export default function Home() {
       description:
         identifiedIngredients ||
         "First, enter your text to recognize ingredients.",
+      hasResponse: Boolean(identifiedIngredients),
+      isLoading,
       icon: <NotepadText />,
     },
     "Image analysis": {
       title: "Here is the summary",
       description:
         analysisResult || "First, enter your image to recognize ingredients.",
+      hasResponse: Boolean(analysisResult),
+      isLoading,
       icon: <NotepadText />,
     },
     "Image Creator": {
       title: "Result",
+      description: "First, enter your text to generate an image.",
       imageUrl: imageUrl,
       imageTitle: imageTitle,
       isLoading: isLoading,
@@ -129,11 +160,23 @@ export default function Home() {
             tabs={tabs}
           />
           {activeTabs === "Image analysis" && (
-            <Input
-              onFileSelect={setSelectedFile}
-              onGenerate={() => handleAnalyzeImage(selectedFile!)}
-              isLoading={isLoading}
-            />
+            <div className="flex flex-col gap-3">
+              <Input
+                selectedFile={selectedFile}
+                onFileSelect={(file) => {
+                  setSelectedFile(file);
+                  setAnalysisError("");
+                  setAnalysisResult("");
+                }}
+                onGenerate={() => handleAnalyzeImage(selectedFile)}
+                isLoading={isLoading}
+              />
+              {analysisError && (
+                <p role="alert" className="text-sm leading-5 text-red-600">
+                  {analysisError}
+                </p>
+              )}
+            </div>
           )}
           {(activeTabs === "Ingredient recognition" ||
             activeTabs === "Image Creator") && (

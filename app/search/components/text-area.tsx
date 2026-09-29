@@ -1,5 +1,5 @@
 "use client";
-import { RotateCw, Sparkles } from "lucide-react";
+import { LoaderCircle, RotateCw, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 
 interface TextareaProps {
@@ -46,8 +46,12 @@ export const Textarea = ({
         <button
           onClick={() => onGenerate(inputText)}
           disabled={isLoading || !inputText.trim()}
+          aria-busy={isLoading}
           className="h-10 px-4 py-2 gap-2 bg-[#8B8B8D] rounded-md flex ml-auto items-center disabled:opacity-50 hover:bg-gray-700 transition-colors"
         >
+          {isLoading && (
+            <LoaderCircle aria-hidden="true" className="size-4 text-white motion-safe:animate-spin" />
+          )}
           <span className="text-[14px] font-medium leading-5 text-[#FAFAFA]">
             {isLoading ? "Generating..." : "Generate"}
           </span>

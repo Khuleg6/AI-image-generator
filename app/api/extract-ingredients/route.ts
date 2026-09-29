@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
     const prompt = `Дараах хоолны тайлбараас орц найрлагуудыг ялган авч, зөвхөн цэгтэй жагсаалт (bullet points) хэлбэрээр хариулна уу. Зөвхөн орцнуудыг л жагсааж бичнэ үү: "${text}"`;
 

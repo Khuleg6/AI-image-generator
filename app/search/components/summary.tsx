@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
+import { LoaderCircle } from "lucide-react";
 
 interface SummaryProps {
   title: string;
@@ -10,6 +11,7 @@ interface SummaryProps {
   imageTitle?: string;
   isLoading?: boolean;
   destitle?: string;
+  hasResponse?: boolean;
 }
 
 export const Summary = ({
@@ -20,6 +22,7 @@ export const Summary = ({
   imageTitle,
   isLoading,
   destitle,
+  hasResponse = false,
 }: SummaryProps) => {
   return (
     <div className="flex flex-col gap-3 w-full">
@@ -29,8 +32,9 @@ export const Summary = ({
       </div>
 
       {isLoading && (
-        <div className="w-full max-w-[500px] aspect-square bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center text-sm text-gray-400 animate-pulse">
-          AI is painting your food... 🎨
+        <div role="status" className="flex items-center gap-2 py-2 text-sm text-gray-500">
+          <LoaderCircle aria-hidden="true" className="size-4 motion-safe:animate-spin" />
+          Generating...
         </div>
       )}
 
@@ -53,12 +57,20 @@ export const Summary = ({
       )}
 
       {!imageUrl && !isLoading && description && (
-        <div className="flex flex-col gap-2 border p-4 rounded-lg border-[#E4E4E7]">
-          <span className="text-gray-900 font-medium">{destitle}</span>
+        <div
+          className={`flex flex-col gap-2 ${
+            hasResponse ? "rounded-lg border border-[#E4E4E7] p-4" : ""
+          }`}
+        >
+          {destitle && (
+            <span className="text-gray-900 font-medium">{destitle}</span>
+          )}
           <div>
             <span
               style={{ whiteSpace: "pre-line" }}
-              className="text-[#71717A] font-bold text-[14px] leading-6 list-disc"
+              className={`text-[#71717A] text-[14px] leading-6 ${
+                hasResponse ? "font-bold" : "font-normal"
+              }`}
             >
               {description}
             </span>
