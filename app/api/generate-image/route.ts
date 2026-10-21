@@ -1,7 +1,34 @@
 import { NextResponse } from "next/server";
 
-// Cloudflare Workers AI дээрх FLUX.1-schnell модель (өдөр бүр үнэгүй лимиттэй)
-const MODEL = "@cf/black-forest-labs/flux-1-schnell";
+// Cloudflare Workers AI дээрх FLUX моделиуд (өдөр бүр үнэгүй лимиттэй).
+// Үндсэн модель Cloudflare талд ажиллахгүй (5xx) бол нөөц модель руу шилжинэ.
+const PRIMARY_MODEL = "@cf/black-forest-labs/flux-1-schnell";
+const FALLBACK_MODEL = "@cf/black-forest-labs/flux-2-klein-4b";
+
+async function runModel(model: string, prompt: string, accountId: string, apiToken: string) {
+  // flux-2 моделиуд multipart/form-data хүлээж авдаг, flux-1 нь JSON
+  const isFlux2 = model.includes("flux-2");
+  let body: BodyInit;
+  const headers: Record<string, string> = { Authorization: `Bearer ${apiToken}` };
+
+  if (isFlux2) {
+    const form = new FormData();
+    form.append("prompt", prompt);
+    form.append("width", "1024");
+    form.append("height", "1024");
+    body = form;
+  } else {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify({ prompt, steps: 4 });
+  }
+
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
+    { method: "POST", headers, body },
+  );
+  const data = await response.json();
+  return { response, data };
+}
 
 export async function POST(request: Request) {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
@@ -17,19 +44,12 @@ export async function POST(request: Request) {
   try {
     const { prompt } = await request.json();
 
-    const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt, steps: 4 }),
-      },
-    );
+    let { response, data } = await runModel(PRIMARY_MODEL, prompt, accountId, apiToken);
 
-    const data = await response.json();
+    if (response.status >= 500) {
+      console.warn(`${PRIMARY_MODEL} алдаа (${response.status}), ${FALLBACK_MODEL} руу шилжлээ:`, data.errors);
+      ({ response, data } = await runModel(FALLBACK_MODEL, prompt, accountId, apiToken));
+    }
 
     if (!response.ok || !data.success) {
       // Cloudflare-ийн жинхэнэ алдааг логлох
@@ -42,13 +62,15 @@ export async function POST(request: Request) {
       };
       const message =
         messages[response.status] ??
-        data.errors?.[0]?.message ??
+        (response.status >= 500
+          ? "Cloudflare-ийн зураг үүсгэх үйлчилгээ түр ажиллахгүй байна. Хэсэг хугацааны дараа дахин оролдоно уу."
+          : data.errors?.[0]?.message) ??
         `Зураг үүсгэхэд алдаа гарлаа (status: ${response.status}).`;
 
       return NextResponse.json({ error: message }, { status: response.status || 500 });
     }
 
-    // Модель зургийг base64 JPEG хэлбэрээр буцаадаг
+    // Моделиуд зургийг base64 JPEG хэлбэрээр буцаадаг
     const buffer = Buffer.from(data.result.image, "base64");
 
     return new NextResponse(buffer, {
